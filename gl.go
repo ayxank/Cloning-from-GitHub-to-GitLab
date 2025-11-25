@@ -17,7 +17,7 @@ import (
 func main() {
 
 	// Create inputs
-	var gh_URL, gh_Token, gh_rel, gl_URL, gl_Token, URL_releases, File_name string
+	var gh_URL, gh_Token, gh_rel, gl_URL, gl_Token string
 	fmt.Println("Write your Github URL(http): ")
 	fmt.Scanln(&gh_URL)
 	fmt.Println("Write your Github Token: ")
@@ -43,16 +43,30 @@ func main() {
 		panic(err)
 	}
 	// Clonning from the Github (releases)
-	URL_releases = "https://github.com/ayxank/test/archive/refs/tags/assad.zip"
-	File_name = gh_rel + ".zip"
+	token := gh_Token
 
-	resp, err := http.Get(URL_releases)
+	url := "https://api.github.com/repos/ayxank/test/zipball/assad"
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 
-	out, err := os.Create(File_name)
+	if resp.StatusCode != 200 {
+		panic("GitHub error: " + resp.Status)
+	}
+
+	out, err := os.Create("release.zip")
 	if err != nil {
 		panic(err)
 	}
@@ -132,11 +146,6 @@ func main() {
 	// Removing folders from the repository
 
 	err = os.RemoveAll("./repo")
-	if err != nil {
-		log.Fatalf("Error removing directory: %v", err)
-	}
-
-	err = os.RemoveAll("./" + File_name)
 	if err != nil {
 		log.Fatalf("Error removing directory: %v", err)
 	}
