@@ -17,13 +17,13 @@ import (
 func main() {
 
 	// Create inputs
-	var gh_URL, gh_Token, gh_rel, gl_URL, gl_Token string
+	var gh_URL, gh_Token, gh_dl, gl_URL, gl_Token string
 	fmt.Println("Write your Github URL(http): ")
 	fmt.Scanln(&gh_URL)
 	fmt.Println("Write your Github Token: ")
 	fmt.Scanln(&gh_Token)
-	fmt.Println("Write Github releas name ('repo name' + '-' + 'releas name'): ")
-	fmt.Scanln(&gh_rel)
+	fmt.Println("Write Github releas downloading link: ")
+	fmt.Scanln(&gh_dl)
 	fmt.Println("Write your Gitlab URL(http): ")
 	fmt.Scanln(&gl_URL)
 	fmt.Println("Write your Gitlab Token: ")
@@ -43,16 +43,42 @@ func main() {
 		panic(err)
 	}
 	// Clonning from the Github (releases)
-	token := gh_Token
 
-	url := "https://api.github.com/repos/ayxank/test/zipball/assad"
+	// Url adaptation
+	c := "https://api.github.com/repos/"
+	d := 0
 
-	req, err := http.NewRequest("GET", url, nil)
+	for _, ch := range gh_dl[19:] {
+		if ch == '/' {
+			d++
+		}
+		if d == 2 {
+			d = 0
+			break
+		}
+		c += string(ch)
+	}
+
+	c += "/zipball/"
+
+	d = 0
+	for i := len(gh_dl) - 1; i >= 0; i-- {
+		if gh_dl[i] == '/' {
+			break
+		}
+		d++
+	}
+
+	gh_dl = c + gh_dl[len(gh_dl)-d:len(gh_dl)-4]
+
+	// Cloning
+
+	req, err := http.NewRequest("GET", gh_dl, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Authorization", "token "+gh_Token)
 	req.Header.Set("Accept", "application/vnd.github+json")
 
 	client := &http.Client{}
