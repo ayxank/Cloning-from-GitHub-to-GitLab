@@ -28,7 +28,7 @@ func main() {
 	fmt.Scanln(&gl_URL)
 	fmt.Println("Write your Gitlab Token: ")
 	fmt.Scanln(&gl_Token)
-
+	//////////////////////////////////////////////////////////////////////
 	// Cloning from the Github
 
 	_, err := git.PlainClone("./repo", false, &git.CloneOptions{
@@ -42,11 +42,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	//////////////////////////////////////////////////////////////////////
 	// Clonning from the Github (releases)
 
 	// Url adaptation
 	c := "https://api.github.com/repos/"
 	d := 0
+	gh_release := ""
 
 	for _, ch := range gh_dl[19:] {
 		if ch == '/' {
@@ -68,9 +70,8 @@ func main() {
 		}
 		d++
 	}
-
+	gh_release = gh_dl[len(gh_dl)-d : len(gh_dl)-4]
 	gh_dl = c + gh_dl[len(gh_dl)-d:len(gh_dl)-4]
-
 	// Cloning
 
 	req, err := http.NewRequest("GET", gh_dl, nil)
@@ -92,7 +93,8 @@ func main() {
 		panic("GitHub error: " + resp.Status)
 	}
 
-	out, err := os.Create("release.zip")
+	c = gh_release + ".zip"
+	out, err := os.Create(c)
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +104,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	//////////////////////////////////////////////////////////////////////
 	// Transfer to Gitlab
 	// Open repo
 
@@ -166,8 +168,9 @@ func main() {
 	}
 
 	fmt.Println("Successfully pushed.")
-
+	//////////////////////////////////////////////////////////////////////
 	// Push to the remote (releases)
+
 
 	// Removing folders from the repository
 
@@ -175,5 +178,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error removing directory: %v", err)
 	}
+
 
 }
